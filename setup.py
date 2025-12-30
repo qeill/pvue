@@ -12,7 +12,7 @@ with open(os.path.join(os.path.dirname(__file__), 'requirements.txt'), 'r', enco
 setup(
     # 包的基本信息
     name="pvue",
-    version="0.1.1",
+    version="0.1.4",
     author="Your Name",
     author_email="your.email@example.com",
     description="A Python framework that integrates Vue 3 frontend with Python backend using WebSocket",

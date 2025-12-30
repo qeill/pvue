@@ -7,6 +7,15 @@ import threading
 from typing import Dict, Callable, Any, Optional
 from .utils import get_static_dir
 
+# 配置 WebView 使用 EdgeChromium 后端，避免依赖 pythonnet
+# 注意：webview 6.x 使用不同的配置方式，不需要直接设置 USE_EDGE_CHROMIUM
+# 它会自动检测可用的后端，在 Windows 上优先使用 Edge Chromium
+
+# 确保不导入 pythonnet
+import sys
+if 'pythonnet' in sys.modules:
+    del sys.modules['pythonnet']
+
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""
     

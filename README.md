@@ -1,90 +1,90 @@
-# Pvue - Python + Vue 3 Framework
+# Pvue - Python + Vue 3 框架
 
-Pvue is a modern framework that combines Vue 3 frontend with Python WebSocket backend, allowing developers to create desktop applications with ease. It provides a seamless integration between Python business logic and Vue 3 UI, supporting both web and desktop deployment.
+Pvue 是一个现代化的框架，将 Vue 3 前端与 Python WebSocket 后端相结合，让开发者能够轻松创建桌面应用程序。它提供了 Python 业务逻辑与 Vue 3 UI 之间的无缝集成，支持 Web 和桌面两种部署方式。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/pvue.svg)](https://badge.fury.io/py/pvue)
 [![GitHub stars](https://img.shields.io/github/stars/qeill/pvue.svg)](https://github.com/qeill/pvue/stargazers)
 
-[中文版本 (Chinese Version)](README_zh.md)
+[English Version](README_en.md)
 
-## Features
+## 功能特性
 
-- **Vue 3 + Python WebSocket**: Modern frontend with responsive design and real-time communication
-- **Multiple Deployment Modes**: Web server, Eel desktop app, and PyWebView desktop app
-- **Plugin System**: Extensible architecture for adding new features
-- **Easy Packaging**: Support for PyInstaller to create standalone EXE files
-- **Responsive Design**: Modern UI that works on different screen sizes
-- **Scientific Calculator**: Built-in example with standard and scientific modes
-- **Notepad Application**: Example of a simple text editor
+- **Vue 3 + Python WebSocket**：现代化的前端设计，支持响应式布局和实时通信
+- **多种部署模式**：Web 服务器、Eel 桌面应用和 PyWebView 桌面应用
+- **插件系统**：可扩展的架构，便于添加新功能
+- **简单打包**：支持使用 PyInstaller 创建独立的 EXE 文件
+- **响应式设计**：适配不同屏幕尺寸的现代化 UI
+- **科学计算器**：内置示例，包含标准和科学两种模式
+- **记事本应用**：简单文本编辑器示例
 
-## Installation
+## 安装
 
-### Prerequisites
+### 前置条件
 
-- Python 3.7+
-- pip (Python package manager)
+- Python 3.7+ 
+- pip（Python 包管理器）
 
-### Install from PyPI
+### 从 PyPI 安装
 
 ```bash
 pip install pvue
 ```
 
-### Install from Source
+### 从源码安装
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/qeill/pvue.git
 cd pvue
 
-# Install dependencies
+# 安装依赖
 pip install -r requirements.txt
 
-# Install the package in development mode
+# 以开发模式安装包
 pip install -e .
 ```
 
-## Quick Start
+## 快速开始
 
-### Create a Simple Pvue Application
+### 创建一个简单的 Pvue 应用
 
 ```python
 from pvue.main import PvueApp
 
-# Initialize Pvue app
+# 初始化 Pvue 应用
 app = PvueApp()
 
-# Define a Python function that can be called from Vue
+# 定义一个可以从 Vue 调用的 Python 函数
 def hello(name):
-    return f"Hello, {name}!"
+    return f"你好, {name}!"
 
-# Register the function
+# 注册函数
 app.register_function(hello)
 
-# Start the app
+# 启动应用
 app.run()
 ```
 
-### Access the Application
+### 访问应用
 
-After running the script, open your browser and navigate to:
+运行脚本后，打开浏览器并导航到：
 ```
 http://localhost:8000
 ```
 
-## Usage
+## 使用方法
 
-### Web Mode
+### Web 模式
 
 ```python
 from pvue.main import PvueApp
 
 app = PvueApp()
-app.run(mode='web')  # Default mode
+app.run(mode='web')  # 默认模式
 ```
 
-### Eel Desktop Mode
+### Eel 桌面模式
 
 ```python
 from pvue.eel import PvueEelApp
@@ -93,7 +93,7 @@ app = PvueEelApp()
 app.run()
 ```
 
-### PyWebView Desktop Mode
+### PyWebView 桌面模式
 
 ```python
 from pvue.webview import PvueWebViewApp
@@ -102,95 +102,95 @@ app = PvueWebViewApp()
 app.run()
 ```
 
-## Examples
+## 示例应用
 
-### Scientific Calculator
+### 科学计算器
 
-The project includes a fully functional scientific calculator with both standard and scientific modes:
+项目包含一个功能完整的科学计算器，支持标准和科学两种模式：
 
 ```bash
 cd test
 python scientific_calculator.py
 ```
 
-### Todo App with Eel
+### Eel 待办事项应用
 
 ```bash
 cd examples/eel-todo
 python main.py
 ```
 
-### Todo App with PyWebView
+### PyWebView 待办事项应用
 
 ```bash
 cd examples/webview-todo
 python main.py
 ```
 
-## Project Structure
+## 项目结构
 
 ```
 pvue/
-├── backend/           # Python WebSocket server
+├── backend/           # Python WebSocket 服务器
 │   ├── __init__.py
 │   └── server.py
-├── frontend/          # Vue 3 frontend
+├── frontend/          # Vue 3 前端
 │   ├── src/
-│   │   ├── components/
-│   │   ├── plugins/
-│   │   ├── App.vue
-│   │   ├── main.js
-│   │   └── style.css
-│   ├── index.html
-│   └── package.json
-├── pvue/              # Main package code
+│   │   ├── components/    # 组件
+│   │   ├── plugins/       # 插件
+│   │   ├── App.vue        # 主应用组件
+│   │   ├── main.js        # 入口文件
+│   │   └── style.css      # 样式文件
+│   ├── index.html         # HTML 模板
+│   └── package.json       # 前端依赖配置
+├── pvue/              # 主包代码
 │   ├── __init__.py
-│   ├── main.py
-│   ├── eel.py
-│   ├── webview.py
-│   └── static/        # Compiled frontend files
-├── examples/          # Example applications
-│   ├── eel-todo/
-│   └── webview-todo/
-├── test/              # Test applications
-│   └── scientific_calculator.py
-├── setup.py           # Package setup
-└── README.md          # This file
+│   ├── main.py         # Web 模式主文件
+│   ├── eel.py          # Eel 模式主文件
+│   ├── webview.py      # PyWebView 模式主文件
+│   └── static/         # 编译后的前端文件
+├── examples/          # 示例应用
+│   ├── eel-todo/       # Eel 待办事项示例
+│   └── webview-todo/   # PyWebView 待办事项示例
+├── test/              # 测试应用
+│   └── scientific_calculator.py  # 科学计算器
+├── setup.py           # 包配置文件
+└── README.md          # 项目文档
 ```
 
-## Architecture
+## 架构设计
 
-### Frontend
+### 前端
 
-- **Vue 3**: Modern reactive framework with Composition API
-- **WebSocket**: Real-time communication with Python backend
-- **Plugin System**: Extensible architecture for adding features
-- **Responsive Design**: CSS Grid and Flexbox for layout
+- **Vue 3**：使用 Composition API 的现代响应式框架
+- **WebSocket**：与 Python 后端的实时通信
+- **插件系统**：可扩展的架构，便于添加功能
+- **响应式设计**：使用 CSS Grid 和 Flexbox 实现布局
 
-### Backend
+### 后端
 
-- **Python 3**: Business logic implementation
-- **WebSocket Server**: Using websockets library for real-time communication
-- **Multiple Modes**: Web server, Eel, and PyWebView integration
-- **Function Registration**: Easy registration of Python functions to be called from Vue
+- **Python 3**：业务逻辑实现
+- **WebSocket 服务器**：使用 websockets 库实现实时通信
+- **多种模式**：Web 服务器、Eel 和 PyWebView 集成
+- **函数注册**：简单注册 Python 函数，以便从 Vue 调用
 
-## Plugin Development
+## 插件开发
 
-Pvue includes a plugin system that allows you to extend the framework functionality. Refer to the [PLUGIN_DEVELOPMENT.md](PLUGIN_DEVELOPMENT.md) for more information.
+Pvue 包含一个插件系统，允许您扩展框架功能。有关详细信息，请参考 [PLUGIN_DEVELOPMENT.md](PLUGIN_DEVELOPMENT.md)。
 
-## Packaging Applications
+## 打包应用
 
-### Create a Standalone EXE with PyInstaller
+### 使用 PyInstaller 创建独立 EXE
 
 ```bash
 pyinstaller --onefile --windowed your_app.py
 ```
 
-For more detailed packaging instructions, refer to the [PACKAGING_GUIDE.md](PACKAGING_GUIDE.md).
+有关更详细的打包说明，请参考 [PACKAGING_GUIDE.md](PACKAGING_GUIDE.md)。
 
-## Configuration
+## 配置
 
-### Server Configuration
+### 服务器配置
 
 ```python
 app = PvueApp(
@@ -200,13 +200,13 @@ app = PvueApp(
 )
 ```
 
-### Frontend Configuration
+### 前端配置
 
-Modify the Vue app in `frontend/src/App.vue` to customize the UI and functionality.
+修改 `frontend/src/App.vue` 中的 Vue 应用，以自定义 UI 和功能。
 
-## Development
+## 开发
 
-### Build the Frontend
+### 构建前端
 
 ```bash
 cd frontend
@@ -214,47 +214,47 @@ npm install
 npm run build
 ```
 
-### Run Development Server
+### 运行开发服务器
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-### Run Tests
+### 运行测试
 
 ```bash
-# Run backend tests
+# 运行后端测试
 python -m pytest
 
-# Run frontend tests
+# 运行前端测试
 cd frontend
 npm test
 ```
 
-## Contributing
+## 贡献
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork 仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-## License
+## 许可证
 
-This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
+本项目采用 MIT 许可证 - 有关详细信息，请参阅 [LICENSE.txt](LICENSE.txt) 文件。
 
-## Acknowledgments
+## 致谢
 
-- Vue 3 for the modern frontend framework
-- Python for the powerful backend language
-- Eel and PyWebView for desktop integration
-- websockets library for real-time communication
+- Vue 3：现代化的前端框架
+- Python：强大的后端语言
+- Eel 和 PyWebView：桌面集成
+- websockets 库：实时通信支持
 
-## Support
+## 支持
 
-If you have any questions or issues, please open an issue on GitHub or contact the maintainers.
+如果您有任何问题或遇到问题，请在 GitHub 上打开一个 issue 或联系维护者。
 
 ---
 
-**Happy Coding!** 🚀
+**愉快编码！** 🚀
