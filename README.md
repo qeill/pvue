@@ -2,6 +2,12 @@
 
 Pvue is a modern framework that combines Vue 3 frontend with Python WebSocket backend, allowing developers to create desktop applications with ease. It provides a seamless integration between Python business logic and Vue 3 UI, supporting both web and desktop deployment.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://badge.fury.io/py/pvue.svg)](https://badge.fury.io/py/pvue)
+[![GitHub stars](https://img.shields.io/github/stars/qeill/pvue.svg)](https://github.com/qeill/pvue/stargazers)
+
+[中文版本 (Chinese Version)](README_zh.md)
+
 ## Features
 
 - **Vue 3 + Python WebSocket**: Modern frontend with responsive design and real-time communication
@@ -29,7 +35,7 @@ pip install pvue
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pvue.git
+git clone https://github.com/qeill/pvue.git
 cd pvue
 
 # Install dependencies

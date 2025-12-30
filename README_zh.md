@@ -2,6 +2,12 @@
 
 Pvue 是一个现代化的框架，将 Vue 3 前端与 Python WebSocket 后端相结合，让开发者能够轻松创建桌面应用程序。它提供了 Python 业务逻辑与 Vue 3 UI 之间的无缝集成，支持 Web 和桌面两种部署方式。
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://badge.fury.io/py/pvue.svg)](https://badge.fury.io/py/pvue)
+[![GitHub stars](https://img.shields.io/github/stars/qeill/pvue.svg)](https://github.com/qeill/pvue/stargazers)
+
+[English Version](README.md)
+
 ## 功能特性
 
 - **Vue 3 + Python WebSocket**：现代化的前端设计，支持响应式布局和实时通信
@@ -29,7 +35,7 @@ pip install pvue
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/pvue.git
+git clone https://github.com/qeill/pvue.git
 cd pvue
 
 # 安装依赖
