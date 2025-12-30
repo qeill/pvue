@@ -1,0 +1,226 @@
+/* 通知容器 */
+.notification-container {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+/* 通知位置 */
+.notification-container.top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.notification-container.top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.notification-container.bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.notification-container.bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+/* 通知样式 */
+.notification {
+  position: relative;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 400px;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* 通知类型 */
+.notification-success {
+  background-color: #f0f9eb;
+  border-left: 4px solid #67c23a;
+  color: #389e0d;
+}
+
+.notification-error {
+  background-color: #fef0f0;
+  border-left: 4px solid #f56c6c;
+  color: #cf1322;
+}
+
+.notification-warning {
+  background-color: #fdf6ec;
+  border-left: 4px solid #e6a23c;
+  color: #d46b08;
+}
+
+.notification-info {
+  background-color: #ecf5ff;
+  border-left: 4px solid #409eff;
+  color: #1890ff;
+}
+
+/* 通知内容 */
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.notification-message {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 关闭按钮 */
+.notification-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+/* 动画效果 */
+@keyframes notification-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* 左侧通知的动画 */
+.notification.top-left, .notification.bottom-left {
+  animation: notification-slide-in-left 0.3s ease-out forwards !important;
+}
+
+.notification.top-left:not(.notification-visible),
+.notification.bottom-left:not(.notification-visible) {
+  animation: notification-slide-out-left 0.3s ease-in forwards !important;
+}
+
+@keyframes notification-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* 底部通知的动画 */
+.notification.bottom-right {
+  animation: notification-slide-in-bottom 0.3s ease-out forwards !important;
+}
+
+.notification.bottom-right:not(.notification-visible) {
+  animation: notification-slide-out-bottom 0.3s ease-in forwards !important;
+}
+
+.notification.bottom-left {
+  animation: notification-slide-in-bottom-left 0.3s ease-out forwards !important;
+}
+
+.notification.bottom-left:not(.notification-visible) {
+  animation: notification-slide-out-bottom-left 0.3s ease-in forwards !important;
+}
+
+@keyframes notification-slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out-bottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes notification-slide-in-bottom-left {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out-bottom-left {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}

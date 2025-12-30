@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#app {
+    width: 100%;
+    max-width: 500px;
+}
+
+.calculator {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+/* 显示区域 */
+.display {
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    text-align: right;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.history {
+    font-size: 18px;
+    opacity: 0.7;
+    min-height: 24px;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.result {
+    font-size: 48px;
+    font-weight: 300;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+/* 按钮区域 */
+.buttons {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 10px;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 数字按钮 */
+.btn.number {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.btn.number:hover {
+    background: #e2e8f0;
+}
+
+.btn.number.zero {
+    flex: 2;
+}
+
+/* 功能按钮 */
+.btn.function {
+    background: #64748b;
+    color: white;
+}
+
+.btn.function:hover {
+    background: #475569;
+}
+
+/* 运算符按钮 */
+.btn.operator {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn.operator:hover {
+    background: #d97706;
+}
+
+/* 科学函数按钮 */
+.btn.scientific {
+    background: #3b82f6;
+    color: white;
+    font-size: 14px;
+}
+
+.btn.scientific:hover {
+    background: #2563eb;
+}
+
+/* 等号按钮 */
+.btn.equals {
+    background: #10b981;
+    color: white;
+}
+
+.btn.equals:hover {
+    background: #059669;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .calculator {
+        border-radius: 15px;
+    }
+    
+    .display {
+        padding: 15px;
+        min-height: 100px;
+    }
+    
+    .history {
+        font-size: 16px;
+    }
+    
+    .result {
+        font-size: 36px;
+    }
+    
+    .buttons {
+        padding: 15px;
+        gap: 8px;
+    }
+    
+    .row {
+        gap: 8px;
+    }
+    
+    .btn {
+        padding: 12px;
+        font-size: 16px;
+        min-height: 45px;
+        border-radius: 10px;
+    }
+    
+    .btn.scientific {
+        font-size: 12px;
+    }
+}
+
+/* 动画效果 */
+@keyframes calculate {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.calculating {
+    animation: calculate 0.3s ease-in-out;
+}

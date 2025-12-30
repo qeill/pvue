@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pvue 记事本</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="notepad-app">
+        <!-- 标题栏 -->
+        <header class="header">
+            <h1>Pvue 记事本</h1>
+            <div class="header-actions">
+                <button @click="saveNotes" class="btn btn-primary">保存</button>
+                <button @click="loadNotes" class="btn btn-secondary">加载</button>
+                <button @click="addNewNote" class="btn btn-success">新建笔记</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 侧边栏 - 笔记列表 -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>笔记列表</h2>
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            v-model="searchQuery" 
+                            placeholder="搜索笔记..."
+                            class="search-input"
+                        >
+                    </div>
+                </div>
+                <div class="notes-list">
+                    <div 
+                        v-for="note in filteredNotes" 
+                        :key="note.id" 
+                        class="note-item"
+                        :class="{ active: selectedNote && selectedNote.id === note.id }"
+                        @click="selectNote(note)"
+                    >
+                        <div class="note-item-header">
+                            <h3 class="note-title">{{ note.title || '无标题笔记' }}</h3>
+                            <button 
+                                @click.stop="deleteNote(note.id)" 
+                                class="delete-btn"
+                                title="删除笔记"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <p class="note-preview">{{ note.content.substring(0, 50) }}...</p>
+                        <div class="note-meta">
+                            <span class="note-date">{{ note.updated_at }}</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 主编辑区 -->
+            <main class="editor">
+                <div v-if="selectedNote" class="note-editor">
+                    <div class="editor-header">
+                        <input 
+                            type="text" 
+                            v-model="selectedNote.title" 
+                            placeholder="笔记标题"
+                            class="note-title-input"
+                            @input="updateNote"
+                        >
+                        <div class="editor-actions">
+                            <button @click="cancelEdit" class="btn btn-secondary">取消</button>
+                            <button @click="saveNote" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                    <textarea 
+                        v-model="selectedNote.content" 
+                        placeholder="开始写笔记..."
+                        class="note-content"
+                        @input="updateNote"
+                        rows="15"
+                    ></textarea>
+                </div>
+                <div v-else class="empty-state">
+                    <h2>欢迎使用 Pvue 记事本</h2>
+                    <p>选择一条笔记开始编辑，或点击"新建笔记"创建新笔记</p>
+                    <button @click="addNewNote" class="btn btn-success btn-large">新建笔记</button>
+                </div>
+            </main>
+        </div>
+
+        <!-- 底部栏 -->
+        <footer class="footer">
+            <div class="status-info">
+                <span v-if="selectedNote">
+                    编辑中: {{ selectedNote.title || '无标题笔记' }}
+                </span>
+                <span v-else>
+                    未选择笔记
+                </span>
+            </div>
+            <div class="note-count">
+                共 {{ notes.length }} 条笔记
+            </div>
+        </footer>
+
+        <!-- 消息提示 -->
+        <div v-if="message" class="message" :class="message.type">
+            {{ message.text }}
+        </div>
+    </div>
+
+    <!-- 引入应用逻辑 -->
+    <script src="app.js"></script>
+</body>
+</html>

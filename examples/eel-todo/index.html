@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pvue Eel Todo App</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Eel.js -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>Pvue Eel 待办事项</h1>
+            
+            <div class="todo-form">
+                <input 
+                    type="text" 
+                    v-model="newTodo" 
+                    placeholder="输入新的待办事项..." 
+                    @keyup.enter="addTodo"
+                >
+                <button @click="addTodo">添加</button>
+            </div>
+            
+            <div class="todo-list">
+                <div 
+                    v-for="todo in todos" 
+                    :key="todo.id" 
+                    class="todo-item"
+                    :class="{ completed: todo.completed }"
+                >
+                    <input 
+                        type="checkbox" 
+                        v-model="todo.completed"
+                        @change="updateTodo(todo)"
+                    >
+                    <span>{{ todo.text }}</span>
+                    <button @click="deleteTodo(todo.id)" class="delete-btn">删除</button>
+                </div>
+            </div>
+            
+            <div class="todo-stats">
+                <span>已完成: {{ completedCount }}</span>
+                <span>总计: {{ todos.length }}</span>
+                <button @click="clearCompleted" v-if="completedCount > 0">清除已完成</button>
+            </div>
+            
+            <div class="app-info">
+                <button @click="getAppInfo">获取应用信息</button>
+                <div v-if="appInfo" class="info-panel">
+                    <h3>应用信息</h3>
+                    <pre>{{ appInfo }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

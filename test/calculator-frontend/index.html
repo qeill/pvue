@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pvue 科学计算器</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app" class="calculator-app">
+        <!-- 标题栏 -->
+        <header class="header">
+            <h1>Pvue 科学计算器</h1>
+            <div class="header-actions">
+                <button @click="toggleMode" class="mode-toggle">
+                    {{ isScientific ? '标准' : '科学' }}
+                </button>
+            </div>
+        </header>
+
+        <!-- 显示屏 -->
+        <div class="display-container">
+            <div class="history" v-if="history.length > 0">
+                {{ history }}
+            </div>
+            <div class="display">
+                {{ display || '0' }}
+            </div>
+        </div>
+
+        <!-- 计算器按键区域 -->
+        <div class="calculator">
+            <!-- 标准计算器按键 -->
+            <div class="calculator-grid">
+                <!-- 第一行：清除和特殊功能 -->
+                <button @click="clear" class="btn btn-clear">C</button>
+                <button @click="clearEntry" class="btn btn-clear">CE</button>
+                <button @click="backspace" class="btn btn-function"><</button>
+                <button @click="appendOperator('/')" class="btn btn-operator">/</button>
+
+                <!-- 第二行：数字 7-9 和乘法 -->
+                <button @click="appendNumber('7')" class="btn btn-number">7</button>
+                <button @click="appendNumber('8')" class="btn btn-number">8</button>
+                <button @click="appendNumber('9')" class="btn btn-number">9</button>
+                <button @click="appendOperator('*')" class="btn btn-operator">×</button>
+
+                <!-- 第三行：数字 4-6 和减法 -->
+                <button @click="appendNumber('4')" class="btn btn-number">4</button>
+                <button @click="appendNumber('5')" class="btn btn-number">5</button>
+                <button @click="appendNumber('6')" class="btn btn-number">6</button>
+                <button @click="appendOperator('-')" class="btn btn-operator">-</button>
+
+                <!-- 第四行：数字 1-3 和加法 -->
+                <button @click="appendNumber('1')" class="btn btn-number">1</button>
+                <button @click="appendNumber('2')" class="btn btn-number">2</button>
+                <button @click="appendNumber('3')" class="btn btn-number">3</button>
+                <button @click="appendOperator('+')" class="btn btn-operator">+</button>
+
+                <!-- 第五行：0、小数点、正负号和等号 -->
+                <button @click="appendNumber('0')" class="btn btn-number btn-wide">0</button>
+                <button @click="appendDecimal" class="btn btn-function">.</button>
+                <button @click="toggleSign" class="btn btn-function">±</button>
+                <button @click="calculate" class="btn btn-equals">=</button>
+            </div>
+
+            <!-- 科学计算器按键 -->
+            <div v-if="isScientific" class="scientific-panel">
+                <!-- 第一行：三角函数 -->
+                <button @click="appendFunction('sin(')" class="btn btn-function">sin</button>
+                <button @click="appendFunction('cos(')" class="btn btn-function">cos</button>
+                <button @click="appendFunction('tan(')" class="btn btn-function">tan</button>
+                <button @click="appendFunction('asin(')" class="btn btn-function">asin</button>
+                <button @click="appendFunction('acos(')" class="btn btn-function">acos</button>
+                <button @click="appendFunction('atan(')" class="btn btn-function">atan</button>
+
+                <!-- 第二行：对数和幂 -->
+                <button @click="appendFunction('log(')" class="btn btn-function">log</button>
+                <button @click="appendFunction('ln(')" class="btn btn-function">ln</button>
+                <button @click="appendFunction('sqrt(')" class="btn btn-function">√</button>
+                <button @click="appendOperator('^')" class="btn btn-operator">^</button>
+                <button @click="appendFunction('(')" class="btn btn-function">(</button>
+                <button @click="appendFunction(')')" class="btn btn-function">)</button>
+
+                <!-- 第三行：常数和阶乘 -->
+                <button @click="appendNumber('π')" class="btn btn-constant">π</button>
+                <button @click="appendNumber('e')" class="btn btn-constant">e</button>
+                <button @click="appendFunction('!')" class="btn btn-function">!</button>
+                <button @click="appendOperator('%')" class="btn btn-operator">%</button>
+                <button @click="appendFunction('power(')" class="btn btn-function">x^y</button>
+                <button @click="appendFunction('root(')" class="btn btn-function">y√x</button>
+            </div>
+        </div>
+
+        <!-- 消息提示 -->
+        <div v-if="message" class="message" :class="message.type">
+            {{ message.text }}
+        </div>
+    </div>
+
+    <!-- 引入应用逻辑 -->
+    <script src="app.js"></script>
+</body>
+</html>

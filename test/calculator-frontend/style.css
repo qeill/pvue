@@ -1,0 +1,326 @@
+/* 重置样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+/* 计算器应用容器 */
+.calculator-app {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 800px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 标题栏 */
+.header {
+    background: #333;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #444;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.mode-toggle {
+    background: #555;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.mode-toggle:hover {
+    background: #666;
+    transform: translateY(-2px);
+}
+
+/* 显示屏 */
+.display-container {
+    background: #222;
+    color: white;
+    padding: 20px;
+    text-align: right;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.history {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    min-height: 20px;
+}
+
+.display {
+    font-size: 3rem;
+    font-weight: 300;
+    word-break: break-all;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 计算器容器 */
+.calculator {
+    padding: 20px;
+}
+
+/* 标准计算器按键网格 */
+.calculator-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* 科学计算器面板 */
+.scientific-panel {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 15px;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+/* 按键样式 */
+.btn {
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 按键类型样式 */
+.btn-number {
+    background: white;
+    color: #333;
+    border: 1px solid #e0e0e0;
+}
+
+.btn-number:hover {
+    background: #f0f0f0;
+}
+
+.btn-operator {
+    background: #ff9500;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-operator:hover {
+    background: #ff7b00;
+}
+
+.btn-function {
+    background: #5856d6;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-function:hover {
+    background: #4a49c7;
+}
+
+.btn-equals {
+    background: #34c759;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-equals:hover {
+    background: #2fb550;
+}
+
+.btn-clear {
+    background: #ff3b30;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-clear:hover {
+    background: #ff1d10;
+}
+
+.btn-constant {
+    background: #007aff;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-constant:hover {
+    background: #0056cc;
+}
+
+/* 宽按键 */
+.btn-wide {
+    grid-column: span 2;
+}
+
+/* 消息提示 */
+.message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+.message.success {
+    background: #34c759;
+}
+
+.message.error {
+    background: #ff3b30;
+}
+
+.message.info {
+    background: #007aff;
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .calculator-app {
+        margin: 10px;
+        max-width: none;
+        border-radius: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .display {
+        font-size: 2.5rem;
+    }
+    
+    .calculator-grid {
+        gap: 10px;
+    }
+    
+    .scientific-panel {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .btn {
+        padding: 15px;
+        font-size: 1rem;
+        min-height: 50px;
+    }
+    
+    .btn-wide {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .display {
+        font-size: 2rem;
+    }
+    
+    .calculator-grid {
+        gap: 8px;
+    }
+    
+    .btn {
+        padding: 12px;
+        font-size: 0.9rem;
+        min-height: 45px;
+    }
+    
+    .scientific-panel {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 主题切换动画 */
+.calculator-app {
+    transition: all 0.3s ease;
+}
+
+.scientific-panel {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

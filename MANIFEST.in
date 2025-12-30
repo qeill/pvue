@@ -1,0 +1,10 @@
+# 包含前端静态文件
+recursive-include pvue/static *
+
+# 包含README和其他文档
+include README.md
+include LICENSE.txt
+include requirements.txt
+
+# 包含配置文件
+include setup.py

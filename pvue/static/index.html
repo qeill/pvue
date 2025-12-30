@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="calculator">
+            <!-- 显示区域 -->
+            <div class="display">
+                <div class="history" v-if="history">
+                    {{ history }}
+                </div>
+                <div class="result">
+                    {{ display }}
+                </div>
+            </div>
+
+            <!-- 按钮区域 -->
+            <div class="buttons">
+                <!-- 功能按钮 -->
+                <div class="row">
+                    <button class="btn function" @click="clear">C</button>
+                    <button class="btn function" @click="clearEntry">CE</button>
+                    <button class="btn function" @click="backspace"><</button>
+                    <button class="btn function" @click="toggleSign">±</button>
+                    <button class="btn function" @click="percentage">%</button>
+                </div>
+
+                <!-- 科学函数 -->
+                <div class="row">
+                    <button class="btn scientific" @click="calculate('sin')">sin</button>
+                    <button class="btn scientific" @click="calculate('cos')">cos</button>
+                    <button class="btn scientific" @click="calculate('tan')">tan</button>
+                    <button class="btn scientific" @click="calculate('log')">log</button>
+                    <button class="btn scientific" @click="calculate('ln')">ln</button>
+                </div>
+
+                <div class="row">
+                    <button class="btn scientific" @click="calculate('asin')">asin</button>
+                    <button class="btn scientific" @click="calculate('acos')">acos</button>
+                    <button class="btn scientific" @click="calculate('atan')">atan</button>
+                    <button class="btn scientific" @click="calculate('log10')">log10</button>
+                    <button class="btn scientific" @click="calculate('e')">e</button>
+                </div>
+
+                <div class="row">
+                    <button class="btn scientific" @click="calculate('sqrt')">√</button>
+                    <button class="btn scientific" @click="calculate('pow')">x²</button>
+                    <button class="btn scientific" @click="calculate('pow3')">x³</button>
+                    <button class="btn scientific" @click="calculate('1/x')">1/x</button>
+                    <button class="btn scientific" @click="calculate('pi')">π</button>
+                </div>
+
+                <!-- 数字和基本运算 -->
+                <div class="row">
+                    <button class="btn number" @click="append('7')">7</button>
+                    <button class="btn number" @click="append('8')">8</button>
+                    <button class="btn number" @click="append('9')">9</button>
+                    <button class="btn operator" @click="setOperator('/')">÷</button>
+                    <button class="btn operator" @click="calculate('(')">(</button>
+                </div>
+
+                <div class="row">
+                    <button class="btn number" @click="append('4')">4</button>
+                    <button class="btn number" @click="append('5')">5</button>
+                    <button class="btn number" @click="append('6')">6</button>
+                    <button class="btn operator" @click="setOperator('*')">×</button>
+                    <button class="btn operator" @click="calculate(')')">)</button>
+                </div>
+
+                <div class="row">
+                    <button class="btn number" @click="append('1')">1</button>
+                    <button class="btn number" @click="append('2')">2</button>
+                    <button class="btn number" @click="append('3')">3</button>
+                    <button class="btn operator" @click="setOperator('-')">-</button>
+                    <button class="btn operator" @click="setOperator('^')">^</button>
+                </div>
+
+                <div class="row">
+                    <button class="btn number zero" @click="append('0')">0</button>
+                    <button class="btn number" @click="append('.')">.</button>
+                    <button class="btn equals" @click="equals">=</button>
+                    <button class="btn operator" @click="setOperator('+')">+</button>
+                    <button class="btn operator" @click="calculate('!')">!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
