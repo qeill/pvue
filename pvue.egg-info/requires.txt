@@ -1,0 +1,5 @@
+websockets>=12.0
+eel>=0.18.2
+pywebview>=6.1
+pythonnet>=3.0.5
+proxy_tools>=0.1.0
