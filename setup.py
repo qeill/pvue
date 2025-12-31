@@ -15,7 +15,7 @@ install_requires = [
 setup(
     # 包的基本信息
     name="pvue",
-    version="0.1.5",
+    version="0.1.6",
     author="Your Name",
     author_email="your.email@example.com",
     description="A Python framework that integrates Vue 3 frontend with Python backend using WebSocket",
@@ -34,10 +34,16 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
     ],
     
     # Python版本要求
     python_requires=">=3.8",
+    
+    # 支持Python 3.14的特殊配置
+    keywords=["vue", "python", "websocket", "desktop", "gui", "python3.14"],
     
     # 包的依赖
     install_requires=install_requires,

@@ -1,6 +1,6 @@
 """Pvue - Vue 3 + Python WebSocket 桌面应用框架"""
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 __author__ = "Your Name"
 __email__ = "your.email@example.com"
 __description__ = "A Python framework that integrates Vue 3 frontend with Python backend using WebSocket"
