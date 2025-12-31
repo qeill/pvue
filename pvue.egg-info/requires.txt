@@ -1,9 +1,0 @@
-websockets>=12.0
-eel>=0.18.2
-proxy_tools>=0.1.0
-
-[full]
-pywebview>=6.1
-
-[webview]
-pywebview>=6.1
