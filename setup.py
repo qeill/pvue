@@ -5,14 +5,17 @@ import os
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
-# 读取requirements.txt文件内容
-with open(os.path.join(os.path.dirname(__file__), 'requirements.txt'), 'r', encoding='utf-8') as f:
-    install_requires = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+# 核心依赖列表，不包含可能导致问题的pywebview
+install_requires = [
+    'websockets>=12.0',
+    'eel>=0.18.2',
+    'proxy_tools>=0.1.0',
+]
 
 setup(
     # 包的基本信息
     name="pvue",
-    version="0.1.4",
+    version="0.1.5",
     author="Your Name",
     author_email="your.email@example.com",
     description="A Python framework that integrates Vue 3 frontend with Python backend using WebSocket",
@@ -38,6 +41,18 @@ setup(
     
     # 包的依赖
     install_requires=install_requires,
+    
+    # 可选依赖
+    extras_require={
+        # webview支持（包含pywebview，但用户可以选择不安装）
+        "webview": [
+            'pywebview>=6.1',
+        ],
+        # 完整安装（包含所有可选依赖）
+        "full": [
+            'pywebview>=6.1',
+        ],
+    },
     
     # 包的入口点
     entry_points={

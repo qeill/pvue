@@ -5,8 +5,17 @@ import time
 from wsgiref.simple_server import make_server
 from .backend.server import WebSocketServer
 from .eel import EelApp, create_eel_app
-from .webview import WebViewApp, create_webview_app
 from .utils import get_static_dir
+
+# 尝试导入WebView相关功能
+webview_imported = False
+try:
+    from .webview import WebViewApp, create_webview_app
+    webview_imported = True
+except ImportError:
+    # 如果pywebview未安装，只提供核心功能
+    WebViewApp = None
+    create_webview_app = None
 
 class PvueApp:
     """Pvue 应用类，用于管理前端静态文件和后端 WebSocket 服务器"""
@@ -42,6 +51,10 @@ class PvueApp:
         # 确保运行模式有效
         if self.mode not in ['web', 'eel', 'webview']:
             raise ValueError(f"Invalid mode: {self.mode}. Valid modes are: 'web', 'eel', 'webview'")
+        
+        # 检查webview模式是否可用
+        if self.mode == 'webview' and not webview_imported:
+            raise ValueError("WebView mode is not available. Please install pywebview first with: pip install pvue[webview]")
     
     def _static_file_handler(self, environ, start_response):
         """静态文件处理函数"""
