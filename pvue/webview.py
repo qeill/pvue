@@ -18,16 +18,35 @@ if 'pythonnet' in sys.modules:
 
 # 对于 Python 3.14，强制 webview 使用 Edge Chromium 后端，避免使用需要 pythonnet 的 winforms 后端
 if sys.version_info >= (3, 14):
-    # 先尝试设置 gui 属性来强制使用 Edge Chromium
+    # 1. 先设置环境变量，确保在 webview 模块导入前生效
+    import os
+    os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
+    
+    # 2. 导入 webview 模块
     import webview
+    
+    # 3. 直接设置 gui 属性
     webview.gui = 'edgechromium'
     
-    # 更安全的方式：不直接修改 webview.guilib.try_import，而是在 WebViewApp.start 方法中处理
-    # 这样可以避免在模块导入时访问未初始化的属性
-    # 同时，我们也可以通过设置环境变量来影响 webview 的后端选择
-    import os
-    # 设置环境变量，强制使用 Edge Chromium 后端
-    os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
+    # 4. 重写 webview.platforms.winforms 模块的导入逻辑，避免尝试导入 clr
+    import sys
+    import types
+    
+    # 创建一个假的 winforms 模块，避免实际导入
+    fake_winforms = types.ModuleType('webview.platforms.winforms')
+    sys.modules['webview.platforms.winforms'] = fake_winforms
+    
+    # 5. 重写 webview.guilib.import_winforms 函数，返回 False 表示导入失败
+    def fake_import_winforms():
+        return False
+    
+    # 等待 webview.guilib 被初始化后再修改
+    import importlib
+    importlib.reload(webview.guilib)
+    
+    # 确保 guilib 模块有 try_import 函数
+    if hasattr(webview.guilib, 'import_winforms'):
+        webview.guilib.import_winforms = fake_import_winforms
 
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""
