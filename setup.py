@@ -15,7 +15,7 @@ install_requires = [
 setup(
     # 包的基本信息
     name="pvue",
-    version="0.1.7",
+    version="0.1.8",
     author="Your Name",
     author_email="your.email@example.com",
     description="A Python framework that integrates Vue 3 frontend with Python backend using WebSocket",

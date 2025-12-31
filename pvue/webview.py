@@ -21,17 +21,13 @@ if sys.version_info >= (3, 14):
     # 先尝试设置 gui 属性来强制使用 Edge Chromium
     import webview
     webview.gui = 'edgechromium'
-    # 避免尝试导入 winforms 模块
-    import webview.guilib
-    # 修改 try_import 函数，跳过 winforms 后端
-    original_try_import = webview.guilib.try_import
     
-    def patched_try_import(guis):
-        # 过滤掉 winforms 后端，避免 pythonnet 依赖
-        filtered_guis = [gui for gui in guis if gui != 'winforms']
-        return original_try_import(filtered_guis)
-    
-    webview.guilib.try_import = patched_try_import
+    # 更安全的方式：不直接修改 webview.guilib.try_import，而是在 WebViewApp.start 方法中处理
+    # 这样可以避免在模块导入时访问未初始化的属性
+    # 同时，我们也可以通过设置环境变量来影响 webview 的后端选择
+    import os
+    # 设置环境变量，强制使用 Edge Chromium 后端
+    os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
 
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""
