@@ -11,10 +11,27 @@ from .utils import get_static_dir
 # 注意：webview 6.x 使用不同的配置方式，不需要直接设置 USE_EDGE_CHROMIUM
 # 它会自动检测可用的后端，在 Windows 上优先使用 Edge Chromium
 
-# 确保不导入 pythonnet
+# 确保不导入 pythonnet，避免 Python 3.14 兼容性问题
 import sys
 if 'pythonnet' in sys.modules:
     del sys.modules['pythonnet']
+
+# 对于 Python 3.14，强制 webview 使用 Edge Chromium 后端，避免使用需要 pythonnet 的 winforms 后端
+if sys.version_info >= (3, 14):
+    # 先尝试设置 gui 属性来强制使用 Edge Chromium
+    import webview
+    webview.gui = 'edgechromium'
+    # 避免尝试导入 winforms 模块
+    import webview.guilib
+    # 修改 try_import 函数，跳过 winforms 后端
+    original_try_import = webview.guilib.try_import
+    
+    def patched_try_import(guis):
+        # 过滤掉 winforms 后端，避免 pythonnet 依赖
+        filtered_guis = [gui for gui in guis if gui != 'winforms']
+        return original_try_import(filtered_guis)
+    
+    webview.guilib.try_import = patched_try_import
 
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""

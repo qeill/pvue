@@ -1,7 +1,5 @@
 # Pvue - Python + Vue 3 框架
 
-###                                                 ------让你的python界面像VUE一样好看
-
 Pvue 是一个现代化的框架，将 Vue 3 前端与 Python WebSocket 后端相结合，让开发者能够轻松创建桌面应用程序。它提供了 Python 业务逻辑与 Vue 3 UI 之间的无缝集成，支持 Web 和桌面两种部署方式。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
