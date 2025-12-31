@@ -1,5 +1,7 @@
 # Pvue - Python + Vue 3 框架
 
+###                                                 ------让你的python界面像VUE一样好看
+
 Pvue 是一个现代化的框架，将 Vue 3 前端与 Python WebSocket 后端相结合，让开发者能够轻松创建桌面应用程序。它提供了 Python 业务逻辑与 Vue 3 UI 之间的无缝集成，支持 Web 和桌面两种部署方式。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -17,6 +19,7 @@ Pvue 是一个现代化的框架，将 Vue 3 前端与 Python WebSocket 后端�
 - **响应式设计**：适配不同屏幕尺寸的现代化 UI
 - **科学计算器**：内置示例，包含标准和科学两种模式
 - **记事本应用**：简单文本编辑器示例
+- **俄罗斯方块游戏**：经典的俄罗斯方块小游戏示例
 
 ## 安装
 
@@ -127,6 +130,15 @@ cd examples/webview-todo
 python main.py
 ```
 
+### 俄罗斯方块游戏
+
+项目包含一个经典的俄罗斯方块小游戏：
+
+```bash
+cd test/elsfk
+python tetris.py
+```
+
 ## 项目结构
 
 ```
@@ -153,7 +165,10 @@ pvue/
 │   ├── eel-todo/       # Eel 待办事项示例
 │   └── webview-todo/   # PyWebView 待办事项示例
 ├── test/              # 测试应用
-│   └── scientific_calculator.py  # 科学计算器
+│   ├── scientific_calculator.py  # 科学计算器
+│   ├── notepad/       # 记事本应用
+│   ├── calc/          # 科学计算器（GUI 版）
+│   └── elsfk/         # 俄罗斯方块游戏
 ├── setup.py           # 包配置文件
 └── README.md          # 项目文档
 ```
@@ -182,11 +197,24 @@ Pvue 包含一个插件系统，允许您扩展框架功能。有关详细信息
 
 ### 使用 PyInstaller 创建独立 EXE
 
+Pvue 支持使用 PyInstaller 将应用打包为单文件 EXE，方便分发和使用。
+
+有关详细的打包步骤和常见问题解决方案，请参考 [PYINSTALLER_GUIDE.md](PYINSTALLER_GUIDE.md)。
+
+### 快速打包命令
+
 ```bash
-pyinstaller --onefile --windowed your_app.py
+# 生成 spec 文件
+pyi-makespec -F -w your_app.py
+
+# 编辑 spec 文件，添加静态文件目录
+# 然后执行打包
+pyinstaller your_app.spec
 ```
 
-有关更详细的打包说明，请参考 [PACKAGING_GUIDE.md](PACKAGING_GUIDE.md)。
+### 打包示例
+
+请查看 [PYINSTALLER_GUIDE.md](PYINSTALLER_GUIDE.md) 中的完整示例，了解如何打包一个基于 Pvue 框架的科学计算器程序。
 
 ## 配置
 

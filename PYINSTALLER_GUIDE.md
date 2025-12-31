@@ -1,321 +1,281 @@
-# PyInstaller 打包指南：将 Pvue 应用打包为单文件 EXE
+# PyInstaller 打包指南
 
-本指南详细介绍了如何使用 PyInstaller 将 Pvue 框架开发的应用打包成单个可执行文件（EXE），包括如何处理静态文件、添加 hook 文件以及解决常见问题。
+本指南将详细介绍如何使用 PyInstaller 将基于 Pvue 框架开发的程序打包为单文件 EXE。
 
-## 1. 环境准备
+## 目录
+
+- [1. 准备工作](#1-准备工作)
+- [2. 修改程序代码](#2-修改程序代码)
+- [3. 创建 spec 文件](#3-创建-spec-文件)
+- [4. 编辑 spec 文件](#4-编辑-spec-文件)
+- [5. 执行打包](#5-执行打包)
+- [6. 测试打包结果](#6-测试打包结果)
+- [7. 常见问题及解决方案](#7-常见问题及解决方案)
+
+## 1. 准备工作
 
 ### 1.1 安装 PyInstaller
 
 ```bash
-# 安装 PyInstaller
 pip install pyinstaller
-
-# 验证安装
-pyinstaller --version
 ```
 
-### 1.2 准备应用代码
+### 1.2 确保程序可以正常运行
 
-确保你的 Pvue 应用已经完成开发，并且可以正常运行。以下是一个典型的 Pvue 应用结构：
-
-```
-your_app/
-├── your_app.py          # 主应用文件
-├── your_frontend/       # 前端静态文件
-│   ├── index.html       # 前端入口
-│   ├── app.js           # JavaScript 代码
-│   └── style.css        # 样式文件
-└── requirements.txt     # 依赖文件
-```
-
-## 2. 基本打包方法
-
-### 2.1 简单打包命令
+在打包前，确保你的 Pvue 程序可以正常运行：
 
 ```bash
-# 基本打包命令
-pyinstaller --onefile --windowed your_app.py
+python your_program.py
+```
+
+## 2. 修改程序代码
+
+为了让 Pvue 程序在打包后能够正确找到静态文件目录，需要修改程序代码，添加对 PyInstaller 打包后环境的支持。
+
+### 2.1 修改静态文件路径处理
+
+在你的主程序文件（如 `your_program.py`）中，修改静态文件目录的获取方式：
+
+```python
+from pvue import PvueApp
+import os
+import sys
+
+# 处理 PyInstaller 打包后的路径
+if getattr(sys, 'frozen', False):
+    # 打包后的路径
+    current_dir = sys._MEIPASS
+else:
+    # 开发环境路径
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 静态文件目录
+static_dir = os.path.join(current_dir, 'your-frontend-dir')
+
+# 创建 Pvue 应用实例
+app = PvueApp(
+    static_dir=static_dir,
+    web_port=3000,
+    ws_port=8765,
+    mode='webview'
+)
+
+# 启动应用
+if __name__ == '__main__':
+    app.start()
+```
+
+## 3. 创建 spec 文件
+
+使用 PyInstaller 生成初始的 spec 文件：
+
+```bash
+pyi-makespec -F -w your_program.py
 ```
 
 参数说明：
-- `--onefile`：打包成单个 EXE 文件
-- `--windowed`：不显示控制台窗口（GUI 应用使用）
-- `your_app.py`：你的主应用文件
+- `-F`：生成单文件 EXE
+- `-w`：窗口模式运行，不显示命令行窗口
+- `your_program.py`：你的主程序文件名
 
-### 2.2 处理静态文件
+执行后，会生成一个 `your_program.spec` 文件。
 
-Pvue 应用需要访问前端静态文件，在打包后需要特殊处理。在你的应用代码中添加以下逻辑：
+## 4. 编辑 spec 文件
 
-```python
-import os
-import sys
+### 4.1 打开 spec 文件
 
-# 处理 PyInstaller 打包后的静态文件路径
-def get_static_dir():
-    if hasattr(sys, '_MEIPASS'):
-        # 打包后的临时目录
-        return os.path.join(sys._MEIPASS, 'your_frontend')
-    else:
-        # 开发环境
-        return os.path.join(os.path.dirname(__file__), 'your_frontend')
+使用文本编辑器打开生成的 `your_program.spec` 文件。
 
-# 在 PvueApp 初始化时使用
-def main():
-    static_dir = get_static_dir()
-    app = PvueApp(
-        static_dir=static_dir,
-        # 其他配置...
-    )
-    app.start()
+### 4.2 添加静态文件
 
-if __name__ == '__main__':
-    main()
-```
-
-### 2.3 使用 spec 文件打包
-
-对于复杂应用，建议使用 spec 文件进行更精细的配置：
-
-```bash
-# 生成 spec 文件
-pyinstaller --onefile --windowed --name your_app_name your_app.py
-```
-
-这将生成 `your_app_name.spec` 文件，你可以编辑这个文件来添加静态文件、hook 等配置。
-
-## 3. 添加 Hook 文件
-
-Hook 文件用于告诉 PyInstaller 如何处理特定的 Python 模块，尤其是那些使用动态导入或需要特殊处理的模块。
-
-### 3.1 什么是 Hook 文件？
-
-Hook 文件是 PyInstaller 用来确定如何打包特定模块的 Python 脚本。它们通常位于 PyInstaller 的 hooks 目录中，或者你可以创建自定义 hook 文件。
-
-### 3.2 创建自定义 Hook 文件
-
-对于 Pvue 应用，你可能需要为特定模块创建 hook 文件。例如，创建一个 `hook-pvue.py` 文件：
-
-```python
-# hook-pvue.py
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
-
-# 收集 pvue 模块的所有子模块
-hiddenimports = collect_submodules('pvue')
-
-# 收集 pvue 模块的静态文件
-datas = collect_data_files('pvue', include_py_files=False)
-```
-
-### 3.3 使用 Hook 文件
-
-#### 方法一：命令行参数
-
-```bash
-pyinstaller --onefile --windowed --additional-hooks-dir=. your_app.py
-```
-
-#### 方法二：编辑 spec 文件
-
-在 spec 文件的 `Analysis` 部分添加 hook 文件路径：
+在 `a = Analysis()` 部分的 `datas` 列表中添加你的静态文件目录：
 
 ```python
 a = Analysis(
-    ['your_app.py'],
+    ['your_program.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        # 添加你的静态文件
-        ('your_frontend', 'your_frontend'),
-    ],
-    hiddenimports=[
-        # 添加需要的隐藏导入
-        'pvue',
-        'websockets',
-        'eel',
-        'webview',
-    ],
-    hookspath=['.'],  # 指定 hook 文件目录
+    datas=[('your-frontend-dir', 'your-frontend-dir')],
+    hiddenimports=[],
+    hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
 ```
 
-### 3.4 常见模块的 Hook 处理
+其中：
+- `'your-frontend-dir'`：你的前端代码目录名
+- 第一个参数是源目录，第二个参数是打包后的目标目录
 
-#### 3.4.1 Webview 模块
+### 4.3 添加 hidden imports（可选）
 
-对于 PyWebView 模块，你可能需要添加以下 hook：
+如果打包后运行时出现缺少模块的错误，可以在 `hiddenimports` 列表中添加缺少的模块：
 
 ```python
-# hook-webview.py
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
-
-# 收集 webview 的所有子模块
-hiddenimports = collect_submodules('webview')
-
-# 收集 webview 的 DLL 文件和其他资源
-datas = collect_data_files('webview')
-binaries = collect_dynamic_libs('webview')
+hiddenimports=['pvue', 'websockets', 'webview'],
 ```
 
-#### 3.4.2 Eel 模块
+## 5. 执行打包
 
-对于 Eel 模块，你可能需要添加以下 hook：
+使用修改后的 spec 文件执行打包：
 
-```python
-# hook-eel.py
-from PyInstaller.utils.hooks import collect_data_files
-
-# 收集 eel 的资源文件
-datas = collect_data_files('eel')
+```bash
+pyinstaller your_program.spec
 ```
 
-## 4. 完整打包示例：Notepad 应用
+## 6. 测试打包结果
 
-以下是打包 Pvue 记事本应用的完整示例：
+打包完成后，在 `dist` 目录下会生成一个 `your_program.exe` 文件。
 
-### 4.1 准备应用代码
+### 6.1 运行 EXE 文件
 
-确保 `notepad.py` 中包含静态文件处理逻辑：
+双击 `your_program.exe` 文件，或在命令行中运行：
+
+```bash
+dist\your_program.exe
+```
+
+### 6.2 验证功能
+
+确保程序能够正常启动，所有功能正常工作。
+
+## 7. 常见问题及解决方案
+
+### 7.1 静态文件找不到
+
+**错误信息**：
+```
+ValueError: Static directory not found: C:\Users\username\AppData\Local\Temp\_MEIxxxxxx\your-frontend-dir
+```
+
+**解决方案**：
+- 确保你已经修改了程序代码，添加了对 PyInstaller 打包后路径的处理
+- 确保你已经在 spec 文件的 `datas` 列表中添加了静态文件目录
+
+### 7.2 缺少模块
+
+**错误信息**：
+```
+ModuleNotFoundError: No module named 'xxx'
+```
+
+**解决方案**：
+- 在 spec 文件的 `hiddenimports` 列表中添加缺少的模块
+- 例如：`hiddenimports=['xxx', 'yyy'],`
+
+### 7.3 程序启动后立即关闭
+
+**解决方案**：
+- 尝试使用非窗口模式打包（去掉 `-w` 参数），查看命令行中的错误信息
+- 根据错误信息进行修复
+
+### 7.4 WebSocket 端口被占用
+
+**错误信息**：
+```
+WebSocket 服务器启动失败: [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8765): [winerror 10048] 通常每个套接字地址(协议/网络地址/端口)只允许使用一次。
+```
+
+**解决方案**：
+- 修改程序中的 WebSocket 端口号，使用一个不常用的端口
+- 或在程序中添加端口占用检测和自动切换功能
+
+## 示例
+
+以下是一个完整的示例，展示如何打包一个基于 Pvue 框架的科学计算器程序。
+
+### 示例程序结构
+
+```
+caculator/
+├── calculator-frontend/      # 前端代码目录
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── calcx.py                  # 主程序文件
+└── calcx.spec                # spec 文件
+```
+
+### 示例 calcx.py
 
 ```python
+from pvue import PvueApp
 import os
 import sys
-from pvue import PvueApp
 
-# 处理 PyInstaller 打包后的静态文件路径
-def get_static_dir():
-    if hasattr(sys, '_MEIPASS'):
-        # 打包后的临时目录
-        return os.path.join(sys._MEIPASS, 'notepad-frontend')
-    else:
-        # 开发环境
-        return os.path.join(os.path.dirname(__file__), 'notepad-frontend')
+# 处理 PyInstaller 打包后的路径
+if getattr(sys, 'frozen', False):
+    # 打包后的路径
+    current_dir = sys._MEIPASS
+else:
+    # 开发环境路径
+    current_dir = os.path.dirname(os.path.abspath(__file__))
 
-def main():
-    # 创建 Pvue 应用
-    static_dir = get_static_dir()
-    app = PvueApp(
-        static_dir=static_dir,
-        web_port=0,  # 自动选择端口
-        ws_port=0,
-        title="Pvue Notepad",
-        mode="webview"  # 使用 WebView 模式
-    )
-    
-    # 暴露函数给前端
-    @app.expose
-    def save_file(content, filename):
-        # 保存文件逻辑
-        pass
-    
-    # 启动应用
+# 静态文件目录
+static_dir = os.path.join(current_dir, 'calculator-frontend')
+
+# 创建 Pvue 应用实例
+app = PvueApp(
+    static_dir=static_dir,
+    web_port=3000,
+    ws_port=8766,
+    mode='webview'
+)
+
+# 启动应用
+if __name__ == '__main__':
     app.start()
-
-if __name__ == "__main__":
-    main()
 ```
 
-### 4.2 运行打包命令
+### 示例 calcx.spec
 
-```bash
-# 创建 hook 文件
-cat > hook-pvue.py << 'EOF'
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+```python
+# -*- mode: python ; coding: utf-8 -*-
 
-# 收集 pvue 模块的所有子模块
-hiddenimports = collect_submodules('pvue')
+a = Analysis(
+    ['calcx.py'],
+    pathex=[],
+    binaries=[],
+    datas=[('calculator-frontend', 'calculator-frontend')],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+pyz = PYZ(a.pure)
 
-# 收集 pvue 模块的静态文件
-datas = collect_data_files('pvue', include_py_files=False)
-EOF
-
-# 打包命令
-pyinstaller --onefile --windowed --additional-hooks-dir=. --add-data "notepad-frontend;notepad-frontend" notepad.py
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.datas,
+    [],
+    name='calcx',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
 ```
 
-### 4.3 验证打包结果
+## 总结
 
-打包完成后，在 `dist` 目录中会生成 `notepad.exe` 文件。双击运行该文件，验证应用是否正常工作。
+通过以上步骤，你可以成功将基于 Pvue 框架开发的程序打包为单文件 EXE。
 
-## 5. 常见问题和解决方案
+打包过程中遇到问题时，可以参考常见问题及解决方案，或查看 PyInstaller 的官方文档。
 
-### 5.1 静态文件找不到
-
-**问题**：打包后应用无法找到静态文件
-
-**解决方案**：
-1. 确保使用了 `get_static_dir()` 函数处理静态文件路径
-2. 确保在打包命令中添加了 `--add-data` 参数
-3. 检查 spec 文件中的 `datas` 配置是否正确
-
-### 5.2 缺少模块或 DLL
-
-**问题**：运行 EXE 时提示缺少模块或 DLL 文件
-
-**解决方案**：
-1. 添加相应的 `hiddenimports` 到 spec 文件
-2. 创建自定义 hook 文件
-3. 使用 `--collect-all` 参数收集所有依赖
-
-### 5.3 应用启动慢
-
-**问题**：单文件 EXE 启动速度慢
-
-**解决方案**：
-1. 考虑使用 `--onedir` 模式（多文件模式），启动速度更快
-2. 优化应用代码，减少启动时的资源加载
-3. 使用 `--noconsole` 而不是 `--windowed`（Windows 系统）
-
-### 5.4 无法启动 WebView
-
-**问题**：WebView 模式下应用无法启动
-
-**解决方案**：
-1. 确保添加了 webview 的 DLL 文件到打包中
-2. 创建 `hook-webview.py` 文件
-3. 检查 WebView 版本是否兼容
-
-## 6. 高级配置
-
-### 6.1 自定义图标
-
-```bash
-pyinstaller --onefile --windowed --icon=your_icon.ico your_app.py
-```
-
-### 6.2 压缩级别
-
-```bash
-pyinstaller --onefile --windowed --upx-dir=upx-4.0.2 --compress=9 your_app.py
-```
-
-### 6.3 排除不必要的模块
-
-```bash
-pyinstaller --onefile --windowed --exclude-module=tkinter --exclude-module=matplotlib your_app.py
-```
-
-## 7. 总结
-
-使用 PyInstaller 打包 Pvue 应用为单文件 EXE 需要注意以下几点：
-
-1. **静态文件处理**：使用 `_MEIPASS` 处理打包后的静态文件路径
-2. **Hook 文件**：为特殊模块创建自定义 hook 文件
-3. **隐藏导入**：添加所有需要的 `hiddenimports`
-4. **DLL 文件**：确保包含所有必要的 DLL 文件
-5. **测试**：在不同环境下测试打包后的应用
-
-通过本指南，你应该能够成功将 Pvue 应用打包为单个可执行文件，方便分发给用户使用。
-
-## 8. 相关资源
-
-- [PyInstaller 官方文档](https://pyinstaller.org/en/stable/)
-- [PyWebView 文档](https://pywebview.flowrl.com/)
-- [Eel 文档](https://github.com/ChrisKnott/Eel)
-- [Pvue 框架文档](README.md)
+祝你打包顺利！
