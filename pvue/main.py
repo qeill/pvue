@@ -6,16 +6,31 @@ from wsgiref.simple_server import make_server
 from .backend.server import WebSocketServer
 from .eel import EelApp, create_eel_app
 from .utils import get_static_dir
+from .logger import info, error, warning
 
 # 尝试导入WebView相关功能
 webview_imported = False
 try:
-    from .webview import WebViewApp, create_webview_app
+    # 首先检查webview模块是否可以导入
+    import webview as pywebview_module
+    
+    # 然后导入我们的webview模块功能
+    from .webview import WebViewApp, create_webview_app, get_webview_app
     webview_imported = True
-except ImportError:
+    info("WebView模块导入成功")
+except ImportError as e:
+    # 打印更详细的错误信息，帮助调试
+    warning("WebView模块导入失败: {}", e)
     # 如果pywebview未安装，只提供核心功能
     WebViewApp = None
     create_webview_app = None
+    webview_imported = False
+except Exception as e:
+    # 捕获其他可能的异常
+    error("WebView模块导入过程中发生错误: {}", e)
+    WebViewApp = None
+    create_webview_app = None
+    webview_imported = False
 
 class PvueApp:
     """Pvue 应用类，用于管理前端静态文件和后端 WebSocket 服务器"""
@@ -58,9 +73,10 @@ class PvueApp:
             webview_available = True
             error_message = ""
             
+            # 首先检查webview_imported标志
             if not webview_imported:
                 webview_available = False
-                error_message = "pywebview未安装"
+                error_message = "pywebview未安装或导入失败"
             else:
                 # 尝试导入webview模块，确保它能正常工作
                 try:
@@ -68,14 +84,22 @@ class PvueApp:
                     if pvue_webview.webview is None:
                         webview_available = False
                         error_message = "webview模块初始化失败"
+                    else:
+                        # 检查webview_import_successful标志
+                        if not pvue_webview.webview_import_successful:
+                            warning("WebView模块已安装，但初始化不完全，尝试继续使用...")
+                            # 即使初始化不完全，也尝试使用webview模式
+                            webview_available = True
                 except (ImportError, AttributeError) as e:
                     webview_available = False
                     error_message = str(e)
             
             if not webview_available:
                 # 自动回退到web模式，提高用户体验
-                print(f"[Pvue] WebView模式不可用 ({error_message})，自动回退到web模式")
+                warning("WebView模式不可用 ({})，自动回退到web模式", error_message)
                 self.mode = 'web'
+            else:
+                info("WebView模式可用，将使用webview运行应用")
     
     def _static_file_handler(self, environ, start_response):
         """静态文件处理函数"""
@@ -124,13 +148,13 @@ class PvueApp:
         """启动静态文件服务器"""
         try:
             self.web_server = make_server('', self.web_port, self._static_file_handler)
-            print(f"\n静态文件服务器正在运行...")
-            print(f"访问地址: http://localhost:{self.web_port}")
+            info("静态文件服务器正在运行...")
+            info("访问地址: http://localhost:{}", self.web_port)
             self.web_server.serve_forever()
         except KeyboardInterrupt:
             pass
         except Exception as e:
-            print(f"静态文件服务器启动失败: {e}")
+            error("静态文件服务器启动失败: {}", e)
             sys.exit(1)
     
     def start_ws_server(self):
@@ -139,13 +163,13 @@ class PvueApp:
             # 使用已经初始化并注册了函数的 WebSocketServer 实例
             if not self.ws_server:
                 self.ws_server = WebSocketServer(self.ws_port)
-            print(f"WebSocket 服务器正在运行...")
-            print(f"WebSocket 地址: ws://localhost:{self.ws_port}")
+            info("WebSocket 服务器正在运行...")
+            info("WebSocket 地址: ws://localhost:{}", self.ws_port)
             self.ws_server.start()
         except KeyboardInterrupt:
             pass
         except Exception as e:
-            print(f"WebSocket 服务器启动失败: {e}")
+            error("WebSocket 服务器启动失败: {}", e)
             sys.exit(1)
     
     def expose(self, name=None):
@@ -185,14 +209,14 @@ class PvueApp:
     def start(self):
         """启动 Pvue 应用"""
         if self.is_running:
-            print("Pvue 应用已经在运行中")
+            info("Pvue 应用已经在运行中")
             return
         
         self.is_running = True
         
-        print(f"\n=== Pvue 应用启动中 ===")
-        print(f"版本: {__import__('pvue').__version__}")
-        print(f"运行模式: {self._get_mode_description()}")
+        info("=== Pvue 应用启动中 ===")
+        info("版本: {}", __import__('pvue').__version__)
+        info("运行模式: {}", self._get_mode_description())
         
         # 初始化 WebSocket 服务器（不启动）
         self.ws_server = WebSocketServer(self.ws_port)
@@ -227,10 +251,10 @@ class PvueApp:
                     self.eel_app.expose_function(name, func)
                 delattr(self, '_pending_functions')
             
-            print(f"\n=== Pvue Eel 应用启动成功 ===")
-            print(f"WebSocket地址: ws://localhost:{self.ws_port}")
-            print(f"应用将在桌面窗口中打开...")
-            print(f"\n按窗口关闭按钮或 Ctrl+C 停止应用...")
+            info("=== Pvue Eel 应用启动成功 ===")
+            info("WebSocket地址: ws://localhost:{}", self.ws_port)
+            info("应用将在桌面窗口中打开...")
+            info("按窗口关闭按钮或 Ctrl+C 停止应用...")
             
             # 启动 Eel 应用（会阻塞当前线程）
             try:
@@ -258,11 +282,11 @@ class PvueApp:
                     self.webview_app.expose_function(name, func)
                 delattr(self, '_pending_functions')
             
-            print(f"\n=== Pvue WebView 应用启动成功 ===")
-            print(f"前端地址: {server_url}")
-            print(f"WebSocket地址: ws://localhost:{self.ws_port}")
-            print(f"应用将在桌面窗口中打开...")
-            print(f"\n按窗口关闭按钮或 Ctrl+C 停止应用...")
+            info("=== Pvue WebView 应用启动成功 ===")
+            info("前端地址: {}", server_url)
+            info("WebSocket地址: ws://localhost:{}", self.ws_port)
+            info("应用将在桌面窗口中打开...")
+            info("按窗口关闭按钮或 Ctrl+C 停止应用...")
             
             # 直接在主线程中启动 WebView 应用（PyWebView 要求必须在主线程中运行）
             try:
@@ -277,10 +301,10 @@ class PvueApp:
             # 等待服务器启动
             time.sleep(0.5)
             
-            print(f"\n=== Pvue 应用启动成功 ===")
-            print(f"前端地址: {server_url}")
-            print(f"WebSocket地址: ws://localhost:{self.ws_port}")
-            print(f"\n按 Ctrl+C 停止应用...")
+            info("=== Pvue 应用启动成功 ===")
+            info("前端地址: {}", server_url)
+            info("WebSocket地址: ws://localhost:{}", self.ws_port)
+            info("按 Ctrl+C 停止应用...")
             
             try:
                 # 保持主线程运行
@@ -305,7 +329,7 @@ class PvueApp:
     
     def stop(self):
         """停止 Pvue 应用"""
-        print(f"\n=== Pvue 应用正在停止 ===")
+        info("=== Pvue 应用正在停止 ===")
         
         # 停止 WebSocket 服务器
         if self.ws_server:
@@ -325,7 +349,7 @@ class PvueApp:
             self.webview_app.close()
         
         self.is_running = False
-        print(f"Pvue 应用已停止")
+        info("Pvue 应用已停止")
 
 def run_pvue_app(web_port=3000, ws_port=8765, static_dir=None):
     """
