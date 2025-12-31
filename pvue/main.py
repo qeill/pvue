@@ -53,8 +53,29 @@ class PvueApp:
             raise ValueError(f"Invalid mode: {self.mode}. Valid modes are: 'web', 'eel', 'webview'")
         
         # 检查webview模式是否可用
-        if self.mode == 'webview' and not webview_imported:
-            raise ValueError("WebView mode is not available. Please install pywebview first with: pip install pvue[webview]")
+        if self.mode == 'webview':
+            # 更严格的检查，确保webview模块确实可用
+            webview_available = True
+            error_message = ""
+            
+            if not webview_imported:
+                webview_available = False
+                error_message = "pywebview未安装"
+            else:
+                # 尝试导入webview模块，确保它能正常工作
+                try:
+                    from . import webview as pvue_webview
+                    if pvue_webview.webview is None:
+                        webview_available = False
+                        error_message = "webview模块初始化失败"
+                except (ImportError, AttributeError) as e:
+                    webview_available = False
+                    error_message = str(e)
+            
+            if not webview_available:
+                # 自动回退到web模式，提高用户体验
+                print(f"[Pvue] WebView模式不可用 ({error_message})，自动回退到web模式")
+                self.mode = 'web'
     
     def _static_file_handler(self, environ, start_response):
         """静态文件处理函数"""
