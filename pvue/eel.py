@@ -3,18 +3,17 @@
 import os
 import sys
 import eel
-from typing import Dict, Callable, Any, Optional
 
 class EelApp:
     """Eel 应用类，用于管理 Eel 初始化和前后端通信"""
     
     def __init__(self,
-                 static_dir: str,
-                 entry_point: str = 'index.html',
-                 size: tuple = (800, 600),
-                 app_mode: str = 'chrome',
-                 port: int = 0,
-                 dev_mode: bool = False):
+                 static_dir,  # str 静态文件目录路径
+                 entry_point='index.html',  # str 入口 HTML 文件
+                 size=(800, 600),  # tuple 窗口大小
+                 app_mode='chrome',  # str 浏览器模式
+                 port=0,  # int 服务器端口
+                 dev_mode=False):  # bool 是否启用开发模式
         """
         初始化 Eel 应用
         
@@ -34,7 +33,7 @@ class EelApp:
         self.dev_mode = dev_mode
         self.functions = {}
         
-    def expose(self, name: Optional[str] = None) -> Callable:
+    def expose(self, name=None):
         """
         暴露 Python 函数给前端调用
         
@@ -46,7 +45,7 @@ class EelApp:
         """
         return eel.expose(name)
     
-    def expose_function(self, name: str, func: Callable) -> None:
+    def expose_function(self, name, func):
         """
         暴露 Python 函数给前端调用
         
@@ -59,7 +58,7 @@ class EelApp:
         exposed_func = eel.expose(name)(func)
         return exposed_func
     
-    def init(self) -> None:
+    def init(self):
         """初始化 Eel"""
         # 初始化 Eel
         eel.init(self.static_dir)
@@ -67,7 +66,7 @@ class EelApp:
         # 暴露内置函数
         self._expose_builtin_functions()
     
-    def _expose_builtin_functions(self) -> None:
+    def _expose_builtin_functions(self):
         """暴露内置函数给前端"""
         @self.expose('get_app_info')
         def get_app_info():
@@ -78,7 +77,7 @@ class EelApp:
                 'dev_mode': self.dev_mode
             }
     
-    def start(self, **kwargs) -> None:
+    def start(self, **kwargs):
         """
         启动 Eel 应用
         
@@ -97,7 +96,7 @@ class EelApp:
             **kwargs
         )
     
-    def call(self, js_function: str, *args, **kwargs) -> Any:
+    def call(self, js_function, *args, **kwargs):
         """
         调用前端 JavaScript 函数
         
@@ -111,7 +110,7 @@ class EelApp:
         """
         return eel.eval_js(f"{js_function}({','.join(map(str, args))})")
     
-    def add_js_function(self, name: str, func: Callable) -> None:
+    def add_js_function(self, name, func):
         """
         添加 JavaScript 函数到前端
         
@@ -124,18 +123,18 @@ class EelApp:
 # 全局 Eel 应用实例
 _global_eel_app = None
 
-def get_eel_app() -> Optional[EelApp]:
+def get_eel_app():
     """获取全局 Eel 应用实例"""
     return _global_eel_app
 
 def create_eel_app(
-    static_dir: str,
-    entry_point: str = 'index.html',
-    size: tuple = (800, 600),
-    app_mode: str = 'chrome',
-    port: int = 0,
-    dev_mode: bool = False
-) -> EelApp:
+    static_dir,  # str 静态文件目录路径
+    entry_point='index.html',  # str 入口 HTML 文件
+    size=(800, 600),  # tuple 窗口大小
+    app_mode='chrome',  # str 浏览器模式
+    port=0,  # int 服务器端口
+    dev_mode=False  # bool 是否启用开发模式
+):
     """
     创建 Eel 应用实例
     

@@ -3,60 +3,61 @@
 import os
 import sys
 import threading
-from typing import Dict, Callable, Any, Optional
 from .utils import get_static_dir
-
-# 对于 Python 3.14，在导入 webview 模块之前就设置好环境变量，确保完全避免使用需要 pythonnet 的后端
-webview_import_successful = False
 
 # 确保不导入 pythonnet，避免 Python 3.14 兼容性问题
 if 'pythonnet' in sys.modules:
     del sys.modules['pythonnet']
 
-# 在导入 webview 之前，先设置环境变量，强制使用 edgechromium 后端
+# 在所有 Python 版本上，默认使用 edgechromium 后端，避免依赖 pythonnet
 os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
+os.environ['WEBVIEW_GUI'] = 'edgechromium'  # 兼容旧版本
 
-# 对于 Python 3.14，使用更严格的兼容性处理
-if sys.version_info >= (3, 14):
+# 初始化变量
+webview = None
+webview_import_successful = False
+
+# 支持的后端列表，按优先级排序
+SUPPORTED_GUIS = ['edgechromium', 'cef', 'gtk', 'qt', 'qt5', 'qt6', 'wx']
+
+# 尝试在所有 Python 版本上导入 webview 并初始化
+for gui in SUPPORTED_GUIS:
     try:
-        # 1. 强制设置环境变量，确保在 webview 模块导入前生效
-        os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
-        os.environ['WEBVIEW_GUI'] = 'edgechromium'  # 兼容旧版本
+        # 设置当前尝试的后端
+        os.environ['PYWEBVIEW_GUI'] = gui
+        os.environ['WEBVIEW_GUI'] = gui
         
-        # 2. 现在导入 webview 模块
+        # 清除之前的 webview 导入（如果有）
+        if 'webview' in sys.modules:
+            del sys.modules['webview']
+        
+        # 导入 webview 模块
         import webview
         
-        # 3. 直接设置 gui 属性
-        webview.gui = 'edgechromium'
+        # 直接设置 gui 属性
+        webview.gui = gui
         
-        # 4. 重写 webview.guilib 模块，完全替换它，防止尝试导入 winforms
-        import types
-        
-        # 创建一个完整的 guilib 模块替代品
-        new_guilib = types.ModuleType('webview.guilib')
-        
-        # 定义一个安全的 initialize 函数，只返回 edgechromium 后端
-        def safe_initialize(gui=None):
-            # 在 Python 3.14 环境下，只支持 edgechromium 后端
+        # 对于 Python 3.14，进行特殊处理，防止尝试导入 winforms
+        if sys.version_info >= (3, 14):
+            import types
+            
+            # 确保 platforms 模块存在
             if not hasattr(webview, 'platforms'):
                 webview.platforms = types.ModuleType('webview.platforms')
             
-            # 确保 edgechromium 后端模块存在
-            if not hasattr(webview.platforms, 'edgechromium'):
-                # 创建一个功能完整的 edgechromium 模块
-                edgechromium_module = types.ModuleType('webview.platforms.edgechromium')
-                
-                # 导入真正的 edgechromium 模块内容
+            # 确保当前后端模块存在
+            if not hasattr(webview.platforms, gui):
+                # 尝试导入真正的后端模块
                 try:
-                    # 使用安全的方式导入 edgechromium 模块，避免在函数内使用 import *
                     import importlib
-                    real_edgechromium = importlib.import_module('webview.platforms.edgechromium')
-                    # 复制所有属性到新模块
-                    for attr in dir(real_edgechromium):
-                        if not attr.startswith('_'):
-                            setattr(edgechromium_module, attr, getattr(real_edgechromium, attr))
+                    real_backend = importlib.import_module(f'webview.platforms.{gui}')
+                    # 将后端模块添加到 webview.platforms
+                    setattr(webview.platforms, gui, real_backend)
                 except ImportError:
-                    # 如果导入失败，定义必要的函数
+                    # 如果导入失败，创建一个基本的后端模块
+                    backend_module = types.ModuleType(f'webview.platforms.{gui}')
+                    
+                    # 定义必要的函数
                     def create_window(*args, **kwargs):
                         # 简单实现，实际会由 webview 库处理
                         pass
@@ -69,79 +70,90 @@ if sys.version_info >= (3, 14):
                         # 简单实现，实际会由 webview 库处理
                         pass
                     
-                    edgechromium_module.create_window = create_window
-                    edgechromium_module.start = start
-                    edgechromium_module.load_url = load_url
-                
-                # 添加到 platforms 模块和 sys.modules
-                webview.platforms.edgechromium = edgechromium_module
-                sys.modules['webview.platforms.edgechromium'] = edgechromium_module
+                    # 添加函数到后端模块
+                    backend_module.create_window = create_window
+                    backend_module.start = start
+                    backend_module.load_url = load_url
+                    
+                    # 将后端模块添加到 webview.platforms
+                    setattr(webview.platforms, gui, backend_module)
+                    # 添加到 sys.modules
+                    sys.modules[f'webview.platforms.{gui}'] = backend_module
             
-            return webview.platforms.edgechromium
+            # 重写 webview.guilib 模块，确保只使用当前后端
+            new_guilib = types.ModuleType('webview.guilib')
+            
+            # 定义一个安全的 initialize 函数，只返回当前后端
+            def safe_initialize(gui_param=None):
+                # 在当前 Python 环境下，只支持选定的后端
+                return getattr(webview.platforms, gui)
+            
+            # 定义一个安全的 try_import 函数，只尝试当前后端
+            def safe_try_import(guis):
+                return True
+            
+            # 为新的 guilib 模块添加必要的属性
+            new_guilib.initialize = safe_initialize
+            new_guilib.try_import = safe_try_import
+            new_guilib.GUI = {gui: gui}
+            new_guilib.current_gui = gui
+            
+            # 完全替换 webview.guilib 模块
+            webview.guilib = new_guilib
+            
+            # 防止 webview 尝试导入 clr 和 pythonnet
+            # 创建假的模块，防止真正的模块被导入
+            fake_clr = types.ModuleType('clr')
+            sys.modules['clr'] = fake_clr
+            
+            fake_pythonnet = types.ModuleType('pythonnet')
+            sys.modules['pythonnet'] = fake_pythonnet
+            
+            # 确保没有 winforms 相关模块
+            if hasattr(webview.platforms, 'winforms'):
+                webview.platforms.winforms = types.ModuleType('webview.platforms.winforms')
+            
+            # 清除 sys.modules 中的 winforms 相关模块
+            for module_name in list(sys.modules.keys()):
+                if 'winforms' in module_name:
+                    del sys.modules[module_name]
         
-        # 定义一个安全的 try_import 函数，不尝试导入 winforms
-        def safe_try_import(guis):
-            # 在 Python 3.14 环境下，只尝试导入 edgechromium
-            return True
-        
-        # 为新的 guilib 模块添加必要的属性
-        new_guilib.initialize = safe_initialize
-        new_guilib.try_import = safe_try_import
-        new_guilib.GUI = {'edgechromium': 'edgechromium'}
-        new_guilib.current_gui = 'edgechromium'
-        
-        # 完全替换 webview.guilib 模块
-        webview.guilib = new_guilib
-        
-        # 5. 防止 webview 尝试导入 clr 和 pythonnet
-        # 创建一个假的 clr 模块，防止真正的 clr 被导入
-        import sys
-        fake_clr = types.ModuleType('clr')
-        sys.modules['clr'] = fake_clr
-        
-        # 创建一个假的 pythonnet 模块，防止真正的 pythonnet 被导入
-        fake_pythonnet = types.ModuleType('pythonnet')
-        sys.modules['pythonnet'] = fake_pythonnet
-        
-        # 6. 确保 webview.platforms 中没有 winforms 模块
-        if hasattr(webview.platforms, 'winforms'):
-            # 如果存在，替换为一个空模块
-            webview.platforms.winforms = types.ModuleType('webview.platforms.winforms')
-        
-        # 7. 确保 sys.modules 中没有 winforms 相关模块
-        for module_name in list(sys.modules.keys()):
-            if 'winforms' in module_name:
-                del sys.modules[module_name]
-        
-        webview_import_successful = True
-        print(f"[Pvue] Python 3.14 WebView 兼容性处理成功，使用 edgechromium 后端")
+        # 测试 webview 是否能正常工作
+        # 尝试调用一个简单的函数，确保模块能正常使用
+        if hasattr(webview, 'create_window'):
+            webview_import_successful = True
+            print(f"[Pvue] WebView 初始化成功，使用 {gui} 后端")
+            break  # 成功，退出循环
         
     except Exception as e:
-        print(f"[Pvue] Python 3.14 WebView 兼容性处理出错: {e}")
-        print(f"[Pvue] webview 库在 Python 3.14 环境下无法正常工作，因为它依赖的 pythonnet 不支持 Python 3.14")
-        print(f"[Pvue] 建议使用 web 模式运行应用: app = PvueApp(mode='web')")
-        # 在 Python 3.14 环境下，如果 webview 导入失败，就直接设置为 None
-        webview = None
-else:
-    # 对于 Python 3.14 以下的版本，正常导入 webview
+        print(f"[Pvue] 尝试使用 {gui} 后端失败: {e}")
+        # 继续尝试下一个后端
+        continue
+
+# 如果所有后端都失败，尝试使用一个基本的 webview 替代品
+if not webview_import_successful:
     try:
+        # 导入 webview 模块，但不初始化后端
         import webview
         webview_import_successful = True
-    except ImportError:
+        print(f"[Pvue] WebView 模块导入成功，但无法初始化任何后端，将使用默认配置")
+    except ImportError as e:
+        print(f"[Pvue] WebView 模块导入失败: {e}")
+        print(f"[Pvue] 建议安装 pywebview: pip install pvue[webview]")
         webview = None
 
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""
     
     def __init__(self,
-                 static_dir: str,
-                 entry_point: str = 'index.html',
-                 title: str = 'Pvue WebView App',
-                 size: tuple = (800, 600),
-                 resizable: bool = True,
-                 fullscreen: bool = False,
-                 frameless: bool = False,
-                 debug: bool = False):
+                 static_dir,  # str 静态文件目录路径
+                 entry_point='index.html',  # str 入口 HTML 文件
+                 title='Pvue WebView App',  # str 窗口标题
+                 size=(800, 600),  # tuple 窗口大小
+                 resizable=True,  # bool 是否允许调整窗口大小
+                 fullscreen=False,  # bool 是否全屏显示
+                 frameless=False,  # bool 是否无边框
+                 debug=False):  # bool 是否启用调试模式
         """
         初始化 WebView 应用
         
@@ -171,7 +183,7 @@ class WebViewApp:
         # WebSocket URL
         self.ws_url = None
         
-    def expose(self, name: Optional[str] = None) -> Callable:
+    def expose(self, name=None):
         """
         暴露 Python 函数给前端调用
         
@@ -188,7 +200,7 @@ class WebViewApp:
             return func
         return decorator
     
-    def expose_function(self, name: str, func: Callable) -> None:
+    def expose_function(self, name, func):
         """
         暴露 Python 函数给前端调用
         
@@ -198,7 +210,7 @@ class WebViewApp:
         """
         self.exposed_functions[name] = func
     
-    def start(self, server_url: str) -> None:
+    def start(self, server_url):
         """
         启动 WebView 应用
         
@@ -229,7 +241,7 @@ class WebViewApp:
                 raise RuntimeError("WebView is not properly initialized in Python 3.14. Please use web mode instead: app = PvueApp(mode='web')")
             raise
     
-    def call(self, js_function: str, *args, **kwargs) -> Any:
+    def call(self, js_function, *args, **kwargs):
         """
         调用前端 JavaScript 函数
         
@@ -245,7 +257,7 @@ class WebViewApp:
             return self.window.evaluate_js(f"{js_function}({','.join(map(str, args))})")
         return None
     
-    def close(self) -> None:
+    def close(self):
         """关闭 WebView 窗口"""
         if self.window:
             self.window.destroy()
@@ -254,20 +266,20 @@ class WebViewApp:
 # 全局 WebView 应用实例
 _global_webview_app = None
 
-def get_webview_app() -> Optional[WebViewApp]:
+def get_webview_app():
     """获取全局 WebView 应用实例"""
     return _global_webview_app
 
 def create_webview_app(
-    static_dir: str,
-    entry_point: str = 'index.html',
-    title: str = 'Pvue WebView App',
-    size: tuple = (800, 600),
-    resizable: bool = True,
-    fullscreen: bool = False,
-    frameless: bool = False,
-    debug: bool = False
-) -> WebViewApp:
+    static_dir,  # str 静态文件目录路径
+    entry_point='index.html',  # str 入口 HTML 文件
+    title='Pvue WebView App',  # str 窗口标题
+    size=(800, 600),  # tuple 窗口大小
+    resizable=True,  # bool 是否允许调整窗口大小
+    fullscreen=False,  # bool 是否全屏显示
+    frameless=False,  # bool 是否无边框
+    debug=False  # bool 是否启用调试模式
+):
     """
     创建 WebView 应用实例
     
