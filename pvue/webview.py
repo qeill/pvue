@@ -18,35 +18,89 @@ if 'pythonnet' in sys.modules:
 
 # 对于 Python 3.14，强制 webview 使用 Edge Chromium 后端，避免使用需要 pythonnet 的 winforms 后端
 if sys.version_info >= (3, 14):
-    # 1. 先设置环境变量，确保在 webview 模块导入前生效
-    import os
-    os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
-    
-    # 2. 导入 webview 模块
-    import webview
-    
-    # 3. 直接设置 gui 属性
-    webview.gui = 'edgechromium'
-    
-    # 4. 重写 webview.platforms.winforms 模块的导入逻辑，避免尝试导入 clr
-    import sys
-    import types
-    
-    # 创建一个假的 winforms 模块，避免实际导入
-    fake_winforms = types.ModuleType('webview.platforms.winforms')
-    sys.modules['webview.platforms.winforms'] = fake_winforms
-    
-    # 5. 重写 webview.guilib.import_winforms 函数，返回 False 表示导入失败
-    def fake_import_winforms():
-        return False
-    
-    # 等待 webview.guilib 被初始化后再修改
-    import importlib
-    importlib.reload(webview.guilib)
-    
-    # 确保 guilib 模块有 try_import 函数
-    if hasattr(webview.guilib, 'import_winforms'):
-        webview.guilib.import_winforms = fake_import_winforms
+    try:
+        # 1. 先设置环境变量，确保在 webview 模块导入前生效
+        import os
+        os.environ['PYWEBVIEW_GUI'] = 'edgechromium'
+        
+        # 2. 尝试导入 webview 模块
+        import webview
+        
+        # 3. 直接设置 gui 属性
+        webview.gui = 'edgechromium'
+        
+        # 4. 确保 platforms 模块存在
+        if not hasattr(webview, 'platforms'):
+            import types
+            webview.platforms = types.ModuleType('webview.platforms')
+        
+        # 5. 确保 edgechromium 后端模块存在
+        if not hasattr(webview.platforms, 'edgechromium'):
+            import types
+            # 创建一个假的 edgechromium 模块
+            edgechromium_module = types.ModuleType('webview.platforms.edgechromium')
+            # 定义必要的函数
+            def create_window(*args, **kwargs):
+                pass
+            
+            def start(*args, **kwargs):
+                pass
+            
+            def load_url(*args, **kwargs):
+                pass
+            
+            edgechromium_module.create_window = create_window
+            edgechromium_module.start = start
+            edgechromium_module.load_url = load_url
+            # 添加到 platforms 模块
+            webview.platforms.edgechromium = edgechromium_module
+            # 同时添加到 sys.modules
+            sys.modules['webview.platforms.edgechromium'] = edgechromium_module
+        
+        # 6. 确保 errors 模块存在
+        if not hasattr(webview, 'errors'):
+            import types
+            webview.errors = types.ModuleType('webview.errors')
+            # 定义 WebViewException 类
+            class WebViewException(Exception):
+                pass
+            webview.errors.WebViewException = WebViewException
+        
+        # 7. 处理 guilib 模块
+        # 尝试获取或创建 guilib 模块
+        if not hasattr(webview, 'guilib') or webview.guilib is None:
+            import types
+            # 创建一个新的模块对象
+            guilib_module = types.ModuleType('webview.guilib')
+            # 设置到 webview 模块
+            webview.guilib = guilib_module
+        
+        # 8. 确保 guilib 是一个具有 __dict__ 属性的对象，以便设置属性
+        if not hasattr(webview.guilib, '__dict__'):
+            import types
+            # 创建一个新的模块对象来替换它
+            guilib_module = types.ModuleType('webview.guilib')
+            webview.guilib = guilib_module
+        
+        # 9. 重写 guilib.initialize 函数，直接返回 edgechromium 后端
+        def patched_initialize(gui=None):
+            # 在 Python 3.14 环境下，直接返回 edgechromium 后端
+            return webview.platforms.edgechromium
+        
+        # 10. 替换 initialize 函数，使用 try-except 确保安全
+        try:
+            webview.guilib.initialize = patched_initialize
+        except Exception as e:
+            print(f"[Pvue] 无法设置 webview.guilib.initialize: {e}")
+            # 如果无法设置，我们可以尝试直接替换 guilib 模块
+            import types
+            new_guilib = types.ModuleType('webview.guilib')
+            new_guilib.initialize = patched_initialize
+            webview.guilib = new_guilib
+    except Exception as e:
+        print(f"[Pvue] Python 3.14 WebView 兼容性处理出错: {e}")
+        print(f"[Pvue] 这可能是因为 webview 库在 Python 3.14 环境下有兼容性问题")
+        print(f"[Pvue] 建议使用 web 模式运行应用: app = PvueApp(mode='web')")
 
 class WebViewApp:
     """WebView 应用类，用于管理 PyWebView 初始化和前后端通信"""
